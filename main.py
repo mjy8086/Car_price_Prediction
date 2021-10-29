@@ -11,7 +11,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
-
+# making model
 class MultivariateLinearRegressionModel(nn.Module):
     def __init__(self, in_features, hidden_features, out_features):
         super().__init__()
