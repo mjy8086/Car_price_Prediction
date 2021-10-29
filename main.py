@@ -5,9 +5,11 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 import numpy as np
 import pandas as pd
-
+import os
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MinMaxScaler
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 
 class MultivariateLinearRegressionModel(nn.Module):
@@ -69,13 +71,14 @@ if __name__ == '__main__':
     validloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
 
     model = MultivariateLinearRegressionModel(in_features, hidden_features, out_features)
+    model = model.cuda()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     for epoch in range(n_epochs + 1):
         train_loss = 0.0
         for batch_idx, (x_train, y_train) in enumerate(trainloader):
-            pred = model(x_train)
-            loss = F.mse_loss(pred, y_train)
+            pred = model(x_train.cuda())
+            loss = F.mse_loss(pred, y_train.cuda()).cuda()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -86,8 +89,8 @@ if __name__ == '__main__':
         with torch.no_grad():
             valid_loss = 0.0
             for x_val, y_val in validloader:
-                pred = model(x_val)
-                loss = F.mse_loss(pred, y_val)
+                pred = model(x_val.cuda())
+                loss = F.mse_loss(pred, y_val.cuda())
                 valid_loss += np.sqrt(loss.item())
 
         if epoch % 10 == 0:
