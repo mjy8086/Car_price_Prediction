@@ -21,9 +21,9 @@ class MultivariateLinearRegressionModel(nn.Module):
         self.fc4 = nn.Linear(hidden_features, out_features)
 
     def forward(self, x):
-        h1 = F.relu(self.fc1(x))
-        h2 = F.relu(self.fc2(h1))
-        h3 = F.relu(self.fc3(h2))
+        h1 = F.leaky_relu(self.fc1(x))
+        h2 = F.leaky_relu(self.fc2(h1))
+        h3 = F.leaky_relu(self.fc3(h2))
         out = self.fc4(h3)
 
         return out
@@ -56,13 +56,13 @@ class Dataset(Dataset):
         return x, y
 
 
-batch_size = 64
+batch_size = 256
 in_features = 8
 hidden_features = 128
 out_features = 1
 lr = 0.001
 weight_decay = 1e-7
-n_epochs = 200
+n_epochs = 500
 
 if __name__ == '__main__':
     train_data = Dataset('train')
