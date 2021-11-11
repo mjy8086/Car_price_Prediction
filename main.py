@@ -18,14 +18,15 @@ class MultivariateLinearRegressionModel(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(in_features, hidden_features)
         self.fc2 = nn.Linear(hidden_features, hidden_features)
-        # self.fc3 = nn.Linear(hidden_features, hidden_features)
+        self.fc3 = nn.Linear(hidden_features, hidden_features)
         self.fc4 = nn.Linear(hidden_features, out_features)
 
     def forward(self, x):
         h1 = F.leaky_relu(self.fc1(x))
         h2 = F.leaky_relu(self.fc2(h1))
-        # h3 = F.leaky_relu(self.fc3(h1))
-        out = self.fc4(h2)
+        h3 = F.leaky_relu(self.fc3(h2))
+        f1 = self.fc4(h3)
+        out = torch.squeeze(f1)
 
         return out
 
