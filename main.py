@@ -8,8 +8,9 @@ import pandas as pd
 import os
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MinMaxScaler
+from tqdm import tqdm
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 # making model
 class MultivariateLinearRegressionModel(nn.Module):
@@ -17,14 +18,14 @@ class MultivariateLinearRegressionModel(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(in_features, hidden_features)
         self.fc2 = nn.Linear(hidden_features, hidden_features)
-        self.fc3 = nn.Linear(hidden_features, hidden_features)
+        # self.fc3 = nn.Linear(hidden_features, hidden_features)
         self.fc4 = nn.Linear(hidden_features, out_features)
 
     def forward(self, x):
         h1 = F.leaky_relu(self.fc1(x))
         h2 = F.leaky_relu(self.fc2(h1))
-        h3 = F.leaky_relu(self.fc3(h2))
-        out = self.fc4(h3)
+        # h3 = F.leaky_relu(self.fc3(h1))
+        out = self.fc4(h2)
 
         return out
 
@@ -76,24 +77,34 @@ if __name__ == '__main__':
 
     for epoch in range(n_epochs + 1):
         train_loss = 0.0
+        train_mae = 0
         for batch_idx, (x_train, y_train) in enumerate(trainloader):
-            pred = model(x_train.cuda())
-            loss = F.mse_loss(pred, y_train.cuda()).cuda()
+        # for batch_idx, (x_train, y_train) in tqdm(enumerate(trainloader)):
+
+            pred_train = model(x_train.cuda())
+            loss = F.mse_loss(pred_train, y_train.cuda()).cuda()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
             train_loss += np.sqrt(loss.item())
+            train_mae += torch.abs(pred_train - y_train).sum() / batch_size
+            # train_loss += loss.item()
 
         model.eval()
         with torch.no_grad():
             valid_loss = 0.0
+            valid_mae = 0
             for x_val, y_val in validloader:
-                pred = model(x_val.cuda())
-                loss = F.mse_loss(pred, y_val.cuda())
+                pred_val = model(x_val.cuda())
+                loss = F.mse_loss(pred_val, y_val.cuda())
                 valid_loss += np.sqrt(loss.item())
+                valid_mae += torch.abs(pred_val - y_val).sum() / batch_size
 
         if epoch % 10 == 0:
             print('Epoch {:4d}/{} Train_Loss: {:.6f} Val_Loss: {:.6f}'.format(
                 epoch, n_epochs, train_loss / len(trainloader), valid_loss / len(validloader)
+            ))
+            print('Train_MAE: {:.6f} Val_MAE: {:.6f}'.format(
+                train_mae / len(trainloader), valid_mae / len(validloader)
             ))
