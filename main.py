@@ -88,7 +88,7 @@ if __name__ == '__main__':
             optimizer.step()
 
             train_loss += np.sqrt(loss.item())
-            train_mae += torch.abs(pred_train - y_train).sum() / batch_size
+            train_mae += torch.abs(pred_train - y_train.cuda()).sum() / batch_size
             # train_loss += loss.item()
 
         model.eval()
@@ -99,12 +99,12 @@ if __name__ == '__main__':
                 pred_val = model(x_val.cuda())
                 loss = F.mse_loss(pred_val, y_val.cuda())
                 valid_loss += np.sqrt(loss.item())
-                valid_mae += torch.abs(pred_val - y_val).sum() / batch_size
+                valid_mae += torch.abs(pred_val - y_val.cuda()).sum() / batch_size
 
         if epoch % 10 == 0:
-            print('Epoch {:4d}/{} Train_Loss: {:.6f} Val_Loss: {:.6f}'.format(
+            print('Epoch {:4d}/{} Train_Loss: {:.3f} Val_Loss: {:.3f}'.format(
                 epoch, n_epochs, train_loss / len(trainloader), valid_loss / len(validloader)
             ))
-            print('Train_MAE: {:.6f} Val_MAE: {:.6f}'.format(
+            print('Train_MAE: {:.3f} Val_MAE: {:.3f}'.format(
                 train_mae / len(trainloader), valid_mae / len(validloader)
             ))
