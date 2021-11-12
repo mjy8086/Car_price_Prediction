@@ -13,6 +13,18 @@ from tqdm import tqdm
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
+
+"""
+'Applications and Practice in Neural Networks'
+
+Project_No.9: Car Price Regression Model
+
+Constructed model
+RMSE loss for the test dataset: 7283.011
+"""
+
+
+
 # making model
 class MultivariateLinearRegressionModel(nn.Module):
     def __init__(self, in_features, out_features):
@@ -156,6 +168,8 @@ if __name__ == '__main__':
                 train_mae / len(trainloader), valid_mae / len(validloader)
             ))
 
+
+# Evaluate test dataset
     model.eval()
     with torch.no_grad():
         test_loss = 0.0
