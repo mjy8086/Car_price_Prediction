@@ -7,10 +7,11 @@ import numpy as np
 import pandas as pd
 import os
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # making model
 class MultivariateLinearRegressionModel(nn.Module):
@@ -19,13 +20,17 @@ class MultivariateLinearRegressionModel(nn.Module):
         self.fc1 = nn.Linear(in_features, hidden_features)
         self.fc2 = nn.Linear(hidden_features, hidden_features)
         self.fc3 = nn.Linear(hidden_features, hidden_features)
-        self.fc4 = nn.Linear(hidden_features, out_features)
+        self.fc4 = nn.Linear(hidden_features, hidden_features)
+        self.fc5 = nn.Linear(hidden_features, hidden_features)
+        self.fc6 = nn.Linear(hidden_features, out_features)
 
     def forward(self, x):
         h1 = F.leaky_relu(self.fc1(x))
         h2 = F.leaky_relu(self.fc2(h1))
         h3 = F.leaky_relu(self.fc3(h2))
-        f1 = self.fc4(h3)
+        h4 = F.leaky_relu(self.fc4(h3))
+        h5 = F.leaky_relu(self.fc5(h4))
+        f1 = self.fc6(h5)
         out = torch.squeeze(f1)
 
         return out
@@ -36,17 +41,47 @@ class Dataset(Dataset):
         self.data = pd.read_csv('data/' + dataset + '.csv')
 
         encoder = LabelEncoder()
+        scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
 
         self.data['model'] = encoder.fit_transform(self.data['model'])
         self.data['transmission'] = encoder.fit_transform(self.data['transmission'])
         self.data['fuelType'] = encoder.fit_transform(self.data['fuelType'])
 
+        self.data['year'] = scaler.fit_transform(self.data[['year']])
+        self.data['mileage'] = scaler.fit_transform(self.data[['mileage']])
+        self.data['tax'] = scaler.fit_transform(self.data[['tax']])
+        self.data['mpg'] = scaler.fit_transform(self.data[['mpg']])
+        self.data['engineSize'] = scaler.fit_transform(self.data[['engineSize']])
+
         self.x_train = self.data.drop('price', axis=1)
         self.y_train = self.data['price']
 
-        scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
-        self.x_train = scaler.fit_transform(self.x_train)
+        self.x_train = self.x_train.values
         self.y_train = self.y_train.values
+
+
+"""
+이건 이산형을 정수화한 버전
+        encoder = LabelEncoder()
+        scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
+
+        self.data['model'] = encoder.fit_transform(self.data['model'])
+        self.data['transmission'] = encoder.fit_transform(self.data['transmission'])
+        self.data['fuelType'] = encoder.fit_transform(self.data['fuelType'])
+
+        self.data['year'] = scaler.fit_transform(self.data[['year']])
+        self.data['mileage'] = scaler.fit_transform(self.data[['mileage']])
+        self.data['tax'] = scaler.fit_transform(self.data[['tax']])
+        self.data['mpg'] = scaler.fit_transform(self.data[['mpg']])
+        self.data['engineSize'] = scaler.fit_transform(self.data[['engineSize']])
+
+        self.x_train = self.data.drop('price', axis=1)
+        self.y_train = self.data['price']
+
+        self.x_train = self.x_train.values
+        self.y_train = self.y_train.values
+
+"""
 
     def __len__(self):
         return len(self.x_train)
@@ -62,7 +97,7 @@ batch_size = 256
 in_features = 8
 hidden_features = 128
 out_features = 1
-lr = 0.001
+lr = 0.03
 weight_decay = 1e-7
 n_epochs = 500
 
@@ -89,7 +124,8 @@ if __name__ == '__main__':
             optimizer.step()
 
             train_loss += np.sqrt(loss.item())
-            train_mae += torch.abs(pred_train - y_train.cuda()).sum() / batch_size
+            train_mae1 = torch.abs(pred_train - y_train.cuda()).sum() / batch_size
+            train_mae += train_mae1
             # train_loss += loss.item()
 
         model.eval()
@@ -100,7 +136,8 @@ if __name__ == '__main__':
                 pred_val = model(x_val.cuda())
                 loss = F.mse_loss(pred_val, y_val.cuda())
                 valid_loss += np.sqrt(loss.item())
-                valid_mae += torch.abs(pred_val - y_val.cuda()).sum() / batch_size
+                valid_mae1 = torch.abs(pred_val - y_val.cuda()).sum() / batch_size
+                valid_mae += valid_mae1
 
         if epoch % 10 == 0:
             print('Epoch {:4d}/{} Train_Loss: {:.3f} Val_Loss: {:.3f}'.format(
