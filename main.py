@@ -60,28 +60,26 @@ class Dataset(Dataset):
         self.y_train = self.y_train.values
 
 
-"""
-이건 이산형을 정수화한 버전
-        encoder = LabelEncoder()
-        scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
+# 이건 이산형을 정수화한 버전
+#         encoder = LabelEncoder()
+#         scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
+#
+#         self.data['model'] = encoder.fit_transform(self.data['model'])
+#         self.data['transmission'] = encoder.fit_transform(self.data['transmission'])
+#         self.data['fuelType'] = encoder.fit_transform(self.data['fuelType'])
+#
+#         self.data['year'] = scaler.fit_transform(self.data[['year']])
+#         self.data['mileage'] = scaler.fit_transform(self.data[['mileage']])
+#         self.data['tax'] = scaler.fit_transform(self.data[['tax']])
+#         self.data['mpg'] = scaler.fit_transform(self.data[['mpg']])
+#         self.data['engineSize'] = scaler.fit_transform(self.data[['engineSize']])
+#
+#         self.x_train = self.data.drop('price', axis=1)
+#         self.y_train = self.data['price']
+#
+#         self.x_train = self.x_train.values
+#         self.y_train = self.y_train.values
 
-        self.data['model'] = encoder.fit_transform(self.data['model'])
-        self.data['transmission'] = encoder.fit_transform(self.data['transmission'])
-        self.data['fuelType'] = encoder.fit_transform(self.data['fuelType'])
-
-        self.data['year'] = scaler.fit_transform(self.data[['year']])
-        self.data['mileage'] = scaler.fit_transform(self.data[['mileage']])
-        self.data['tax'] = scaler.fit_transform(self.data[['tax']])
-        self.data['mpg'] = scaler.fit_transform(self.data[['mpg']])
-        self.data['engineSize'] = scaler.fit_transform(self.data[['engineSize']])
-
-        self.x_train = self.data.drop('price', axis=1)
-        self.y_train = self.data['price']
-
-        self.x_train = self.x_train.values
-        self.y_train = self.y_train.values
-
-"""
 
     def __len__(self):
         return len(self.x_train)
