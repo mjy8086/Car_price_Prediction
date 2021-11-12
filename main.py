@@ -34,7 +34,7 @@ class MultivariateLinearRegressionModel(nn.Module):
         # h2 = nn.Dropout(0.1)(h2)
         h3 = F.leaky_relu(self.fc3(h2))
         h3 = self.batchnorm(h3)
-        h3 = nn.Dropout(0.1)(h3)
+        # h3 = nn.Dropout(0.1)(h3)
         h4 = F.leaky_relu(self.fc4(h3))
         h4 = self.batchnorm(h4)
         h4 = nn.Dropout(0.3)(h4)
@@ -42,7 +42,7 @@ class MultivariateLinearRegressionModel(nn.Module):
         # h5 = self.batchnorm(h5)
         # h5 = nn.Dropout(0.1)(h5)
         f1 = self.fc6(h4)
-        # f1 = nn.Dropout(0.1)(f1)
+        # f1 = nn.Dropout(0.3)(f1)
         out = torch.squeeze(f1)
 
         return out
@@ -112,8 +112,10 @@ n_epochs = 150
 if __name__ == '__main__':
     train_data = Dataset('train')
     val_data = Dataset('val')
+    test_data = Dataset('test')
     trainloader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     validloader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
+    testloader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
     model = MultivariateLinearRegressionModel(in_features, out_features)
     model = model.cuda()
@@ -154,3 +156,14 @@ if __name__ == '__main__':
             print('Train_MAE: {:.3f} Val_MAE: {:.3f}'.format(
                 train_mae / len(trainloader), valid_mae / len(validloader)
             ))
+
+    model.eval()
+    with torch.no_grad():
+        test_loss = 0.0
+        test_mae = 0
+        for x_test, y_test in testloader:
+            pred_test = model(x_test.cuda())
+            loss = F.mse_loss(pred_test, y_test.cuda())
+            test_loss += np.sqrt(loss.item())
+            test_mae1 = torch.abs(pred_test - y_test.cuda()).sum() / batch_size
+            test_mae += test_mae1
