@@ -103,7 +103,6 @@ class Dataset(Dataset):
 
 batch_size = 256
 in_features = 8
-# hidden_features = 128
 out_features = 1
 lr = 0.03
 weight_decay = 1e-7
