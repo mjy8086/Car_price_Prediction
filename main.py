@@ -167,3 +167,7 @@ if __name__ == '__main__':
             test_loss += np.sqrt(loss.item())
             test_mae1 = torch.abs(pred_test - y_test.cuda()).sum() / batch_size
             test_mae += test_mae1
+
+    print('Test_Loss: {:.3f} Test_MAE: {:.3f}'.format(
+        test_loss / len(testloader), test_mae / len(testloader)
+    ))
