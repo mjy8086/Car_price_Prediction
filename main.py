@@ -25,6 +25,7 @@ RMSE loss for the test dataset: 7283.011
 
 
 
+
 # making model
 class MultivariateLinearRegressionModel(nn.Module):
     def __init__(self, in_features, out_features):
@@ -46,10 +47,10 @@ class MultivariateLinearRegressionModel(nn.Module):
         # h2 = nn.Dropout(0.1)(h2)
         h3 = F.leaky_relu(self.fc3(h2))
         h3 = self.batchnorm(h3)
-        # h3 = nn.Dropout(0.1)(h3)
+        h3 = nn.Dropout(0.1)(h3)
         h4 = F.leaky_relu(self.fc4(h3))
         h4 = self.batchnorm(h4)
-        h4 = nn.Dropout(0.3)(h4)
+        h4 = nn.Dropout(0.4)(h4)
         # h5 = F.leaky_relu(self.fc5(h4))
         # h5 = self.batchnorm(h5)
         # h5 = nn.Dropout(0.1)(h5)
@@ -65,24 +66,6 @@ class Dataset(Dataset):
         self.data = pd.read_csv('data/' + dataset + '.csv')
 
 # 이건 이산형을 정수화하고 min/max로 정규화 한 버전
-        encoder = LabelEncoder()
-        scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
-
-        self.data['model'] = encoder.fit_transform(self.data['model'])
-        self.data['transmission'] = encoder.fit_transform(self.data['transmission'])
-        self.data['fuelType'] = encoder.fit_transform(self.data['fuelType'])
-
-
-        self.x_train = self.data.drop('price', axis=1)
-        self.y_train = self.data['price']
-
-        self.x_train = scaler.fit_transform(self.x_train.values)
-        self.y_train = self.y_train.values
-# Train_MAE = 1576
-# AdamW = 1591
-
-
-# 이건 이산형을 정수화한 버전
 #         encoder = LabelEncoder()
 #         scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
 #
@@ -90,17 +73,35 @@ class Dataset(Dataset):
 #         self.data['transmission'] = encoder.fit_transform(self.data['transmission'])
 #         self.data['fuelType'] = encoder.fit_transform(self.data['fuelType'])
 #
-#         self.data['year'] = scaler.fit_transform(self.data[['year']])
-#         self.data['mileage'] = scaler.fit_transform(self.data[['mileage']])
-#         self.data['tax'] = scaler.fit_transform(self.data[['tax']])
-#         self.data['mpg'] = scaler.fit_transform(self.data[['mpg']])
-#         self.data['engineSize'] = scaler.fit_transform(self.data[['engineSize']])
 #
 #         self.x_train = self.data.drop('price', axis=1)
 #         self.y_train = self.data['price']
 #
-#         self.x_train = self.x_train.values
+#         self.x_train = scaler.fit_transform(self.x_train.values)
 #         self.y_train = self.y_train.values
+# Train_MAE = 1576
+# AdamW = 1591
+
+
+# 이건 이산형을 정수화한 버전
+        encoder = LabelEncoder()
+        scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
+
+        self.data['model'] = encoder.fit_transform(self.data['model'])
+        self.data['transmission'] = encoder.fit_transform(self.data['transmission'])
+        self.data['fuelType'] = encoder.fit_transform(self.data['fuelType'])
+
+        self.data['year'] = scaler.fit_transform(self.data[['year']])
+        self.data['mileage'] = scaler.fit_transform(self.data[['mileage']])
+        self.data['tax'] = scaler.fit_transform(self.data[['tax']])
+        self.data['mpg'] = scaler.fit_transform(self.data[['mpg']])
+        self.data['engineSize'] = scaler.fit_transform(self.data[['engineSize']])
+
+        self.x_train = self.data.drop('price', axis=1)
+        self.y_train = self.data['price']
+
+        self.x_train = self.x_train.values
+        self.y_train = self.y_train.values
 # Train_MAE = 1730
 
     def __len__(self):
@@ -118,7 +119,7 @@ in_features = 8
 out_features = 1
 lr = 0.03
 weight_decay = 1e-7
-n_epochs = 150
+n_epochs = 70
 
 if __name__ == '__main__':
     train_data = Dataset('train')
@@ -136,7 +137,6 @@ if __name__ == '__main__':
         train_loss = 0.0
         train_mae = 0
         for batch_idx, (x_train, y_train) in enumerate(trainloader):
-        # for batch_idx, (x_train, y_train) in tqdm(enumerate(trainloader)):
 
             pred_train = model(x_train.cuda())
             loss = F.mse_loss(pred_train, y_train.cuda()).cuda()
@@ -147,7 +147,6 @@ if __name__ == '__main__':
             train_loss += np.sqrt(loss.item())
             train_mae1 = torch.abs(pred_train - y_train.cuda()).sum() / batch_size
             train_mae += train_mae1
-            # train_loss += loss.item()
 
         model.eval()
         with torch.no_grad():
@@ -167,7 +166,6 @@ if __name__ == '__main__':
             print('Train_MAE: {:.3f} Val_MAE: {:.3f}'.format(
                 train_mae / len(trainloader), valid_mae / len(validloader)
             ))
-
 
 # Evaluate test dataset
     model.eval()

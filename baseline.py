@@ -19,7 +19,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 Project_No.9: Car Price Regression Model
 
 Baseline model
-RMSE loss for the test dataset: 
+RMSE loss for the test dataset: 10869.592
 """
 
 
