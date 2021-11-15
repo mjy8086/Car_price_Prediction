@@ -10,7 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MinMaxScaler
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 
 """
@@ -89,9 +89,9 @@ class Dataset(Dataset):
 batch_size = 256
 in_features = 8
 out_features = 1
-lr = 0.03
+lr = 0.02
 weight_decay = 1e-7
-n_epochs = 70
+n_epochs = 60
 
 if __name__ == '__main__':
     train_data = Dataset('train')
@@ -103,7 +103,7 @@ if __name__ == '__main__':
 
     model = MultivariateLinearRegressionModel(in_features, out_features)
     model = model.cuda()
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     for epoch in range(n_epochs + 1):
         train_loss = 0.0
