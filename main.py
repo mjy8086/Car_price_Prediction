@@ -7,9 +7,8 @@ import numpy as np
 import pandas as pd
 import os
 from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
-from tqdm import tqdm
+
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -34,28 +33,21 @@ class MultivariateLinearRegressionModel(nn.Module):
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, 128)
         self.fc4 = nn.Linear(128, 128)
-        # self.fc5 = nn.Linear(128, 128)
         self.fc6 = nn.Linear(128, out_features)
         self.batchnorm = nn.BatchNorm1d(128)
 
     def forward(self, x):
         h1 = F.leaky_relu(self.fc1(x))
         h1 = self.batchnorm(h1)
-        # h1 = nn.Dropout(0.1)(h1)
         h2 = F.leaky_relu(self.fc2(h1))
         h2 = self.batchnorm(h2)
-        # h2 = nn.Dropout(0.1)(h2)
         h3 = F.leaky_relu(self.fc3(h2))
         h3 = self.batchnorm(h3)
         h3 = nn.Dropout(0.1)(h3)
         h4 = F.leaky_relu(self.fc4(h3))
         h4 = self.batchnorm(h4)
         h4 = nn.Dropout(0.4)(h4)
-        # h5 = F.leaky_relu(self.fc5(h4))
-        # h5 = self.batchnorm(h5)
-        # h5 = nn.Dropout(0.1)(h5)
         f1 = self.fc6(h4)
-        # f1 = nn.Dropout(0.3)(f1)
         out = torch.squeeze(f1)
 
         return out
@@ -65,25 +57,6 @@ class Dataset(Dataset):
     def __init__(self, dataset):
         self.data = pd.read_csv('data/' + dataset + '.csv')
 
-# 이건 이산형을 정수화하고 min/max로 정규화 한 버전
-#         encoder = LabelEncoder()
-#         scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
-#
-#         self.data['model'] = encoder.fit_transform(self.data['model'])
-#         self.data['transmission'] = encoder.fit_transform(self.data['transmission'])
-#         self.data['fuelType'] = encoder.fit_transform(self.data['fuelType'])
-#
-#
-#         self.x_train = self.data.drop('price', axis=1)
-#         self.y_train = self.data['price']
-#
-#         self.x_train = scaler.fit_transform(self.x_train.values)
-#         self.y_train = self.y_train.values
-# Train_MAE = 1576
-# AdamW = 1591
-
-
-# 이건 이산형을 정수화한 버전
         encoder = LabelEncoder()
         scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
 
@@ -102,7 +75,6 @@ class Dataset(Dataset):
 
         self.x_train = self.x_train.values
         self.y_train = self.y_train.values
-# Train_MAE = 1730
 
     def __len__(self):
         return len(self.x_train)
